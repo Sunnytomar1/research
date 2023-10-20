@@ -39,6 +39,10 @@
     padding: 4px;
     height: 20px;
    margin-right:30%;
+   
+  }
+  .header__searchIcon:hover{
+    cursor: pointer;
   }
   
   .header__optionLineOne {
