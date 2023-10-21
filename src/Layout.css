@@ -1,0 +1,21 @@
+.layout-box{
+    background-color:#F5F3F3;
+    margin-top:130px;
+    margin-left:300px;
+    margin-right:100px;
+     padding:20px;
+    
+
+
+     
+}
+
+
+.tcs{
+    
+    display:flex;
+    flex-direction:column;
+  
+    gap:40px 20px;
+  
+}

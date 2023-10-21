@@ -1,0 +1,65 @@
+.detail-box{
+    background-color:#fff;
+    
+   
+    padding:10px;
+    display:flex;
+    flex-direction:row;
+    align-items: center;
+    justify-content: space-between;
+
+}
+
+.number{
+    font-weight: 900;
+}
+
+.paper_name{
+    font-weight: 800;
+}
+
+.button_control{
+display:flex;
+flex-direction:column;
+justify-content: space-around;
+}
+
+.button1{
+    background-color: #f44336;
+    border: none;
+  color: white;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 900;
+  cursor:pointer;
+  transition-duration: 0.4s;
+}
+
+.button1:hover {
+    background-color: #a32921; /* Red */
+    color: white;
+  }
+
+.button2{
+    background-color: #008CBA;
+    border: none;
+  color: white;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 900;
+  margin-top:5px;
+  cursor:pointer;
+  transition-duration: 0.4s;
+  
+}
+
+.button2:hover {
+    background-color: #0d3e4e; /* Blue */
+    color: white;
+  }

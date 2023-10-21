@@ -1,14 +1,14 @@
 import React from 'react'
 import "./Header.css"
 import SearchIcon from '@mui/icons-material/Search';
-
+import logo from './assets/projectlogo.png';
 
 function Header() {
   return (
     <div>
-  <img
+  <img alt="Header"
           className="header__logo"
-          src=""
+          src={logo}
         />
 
 
