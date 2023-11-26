@@ -6,8 +6,11 @@ import { FcPrevious } from "react-icons/fc";
 import { FaFilePdf } from "react-icons/fa6";
 import "./styles.css";
 import { Link } from "@mui/material";
+import { LoadingSpinner } from "../../components/header/loader";
 
 const Home = () => {
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [pageNo, setPageNo] = useState(1);
   const [googleResult, setGoogleResult] = useState([]);
@@ -99,12 +102,11 @@ const Home = () => {
       }
       let springerArray = [];
 
-      console.log("resSpringer is :");
-      console.log(resSpringer);
       resSpringer.data.map((result) => {
         let editorNameArray = [];
         let editorName = [];
-        result.bookEditors.map((editor) => {
+
+        result.bookEditors?.map((editor) => {
           let name = "";
           editorName = editor.bookEditor.split(",");
           editorName.reverse();
@@ -125,68 +127,14 @@ const Home = () => {
           authors: editorNameArray,
           date: result.onlineDate,
           pdf: result.url.map((links) => {
-            if (links.format === "pdf") 
-            return links.value;
+            if (links.format === "pdf") return links.value;
           }),
         });
       });
-      console.log("Springer Array:");
       setSpringerResult(springerArray);
-      console.log(springerArray);
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const renderSpringerAuthors = (authors) => {
-    return (
-      <div className="card-author">
-        {authors.split(",").map((author, index) => {
-          return <span>{index > 0 ? " ," + author : author}</span>;
-        })}
-      </div>
-    );
-  };
-  const renderSpringerCard = (details) => {
-    return (
-      <div className="my-card">
-        <div className="my-card-header">
-          <a
-            target="_blank"
-            rel="noreferrer"
-            href={details.resource[0]}
-            className="card-title"
-          >
-            {console.log(details.resource)}
-            {details.title}
-          </a>
-          <div style={{ color: "grey" }}>{details.date.split("-")[0]}</div>
-        </div>
-        <div className="my-card-subheading">
-          <div className="card-author">
-            - {details.authors ? renderSpringerAuthors(details.authors) : <></>}
-          </div>
-          <Link target="_blank" rel="noreferrer" href={details.pdf[1]}>
-            <FaFilePdf className="pdf-icon" />
-          </Link>
-          {console.log("Authors")}
-          {console.log(details.authors)}
-          {/* {details.pdf ? (
-        details.resource.map((links) => {
-          if (links.file_format === "PDF" || links.title === "Full View")
-            return (
-              <Link target="_blank" rel="noreferrer" href={details.link}>
-                <FaFilePdf className="pdf-icon" />
-              </Link>
-            );
-        })
-      ) : (
-        <></>
-      )} */}
-        </div>
-        <div>{details.summary}</div>
-      </div>
-    );
   };
 
   const arxivSearch = async () => {
@@ -200,13 +148,17 @@ const Home = () => {
         return;
       }
       let arxivArray = [];
+      console.log("resArxiv is");
+      console.log(resArxiv);
+
       resArxiv.data.map((result) => {
         arxivArray.push({
           title: result.title,
           authors: result.author,
           summary: result.summary,
           resource: result.link,
-          date: result.updated,
+          date: result.published[0].split("-")[0],
+          pdf: result.link,
         });
       });
       setArxivResult(arxivArray);
@@ -214,12 +166,67 @@ const Home = () => {
       console.log(error);
     }
   };
+  const renderArxivAuthors = (authors) => {
+    return (
+      <div className="card-author">
+        {authors.map((author, index) => {
+          return (
+            <span>
+              {index > 0 ? ", " + author.name[0] : "- " + author.name[0]}
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+  const renderArxivCard = (details) => {
+    const pdf = details.resource.map((link) => {
+      if (link.$.type === "application/pdf") {
+        return link.$.href;
+      }
+    });
+    const html = details.resource.map((link) => {
+      if (link.$.type === "text/html") {
+        return link.$.href;
+      }
+    });
+    console.log(pdf);
+    console.log(html);
+    return (
+      <div className="my-card">
+        <div className="my-card-header">
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href={html[0]}
+            className="card-title"
+          >
+            {details.title}
+          </a>
+          <div style={{ color: "grey" }}>{details.date}</div>
+        </div>
+        <div className="my-card-subheading">
+          <div className="card-author">
+            {details.authors.length > 0 ? (
+              renderArxivAuthors(details.authors)
+            ) : (
+              <></>
+            )}
+          </div>
+          <Link target="_blank" rel="noreferrer" href={pdf[1]}>
+            <FaFilePdf className="pdf-icon" />
+          </Link>
+        </div>
+        <div>{details.summary}</div>
+      </div>
+    );
+  };
 
   const renderGoogleAuthors = (authors) => {
     return (
       <div className="card-author">
         {authors.split(",").map((author, index) => {
-          return <span>{index > 0 ? " ," + author : author}</span>;
+          return <span>{index > 0 ? " ," + author : "-" + author}</span>;
         })}
       </div>
     );
@@ -325,19 +332,72 @@ const Home = () => {
     );
   };
 
+  const renderSpringerAuthors = (prop) => {
+    return (
+      <div className="card-authors">
+        {prop.map((author, index) => {
+          return <span>{index > 0 ? " ," + author : "- " + author}</span>;
+        })}
+      </div>
+    );
+  };
+  const renderSpringerCard = (details) => {
+    return (
+      <div className="my-card">
+        <div className="my-card-header">
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href={details.resource[0]}
+            className="card-title"
+          >
+            {details.title}
+          </a>
+          <div style={{ color: "grey" }}>{details.date.split("-")[0]}</div>
+        </div>
+        <div className="my-card-subheading">
+          <div className="card-author">
+            {details.authors.length > 0 ? (
+              renderSpringerAuthors(details.authors)
+            ) : (
+              <></>
+            )}
+          </div>
+          <Link target="_blank" rel="noreferrer" href={details.pdf[1]}>
+            <FaFilePdf className="pdf-icon" />
+          </Link>
+        </div>
+        <div>{details.summary}</div>
+      </div>
+    );
+  };
+
   const renderAllSpringerResults = () => {
     return (
       <div>
-        Hello all
         {springerResult.length > 0 ? (
           <div className="heading-sites">Results from Springer</div>
         ) : (
           <></>
         )}
-        {console.log("inside render all, springerResult is :")}
-        {console.log(springerResult)}
         {springerResult.map((result) => {
-          renderSpringerCard(result);
+          return renderSpringerCard(result);
+        })}
+      </div>
+    );
+  };
+  const renderAllArxivResults = () => {
+    return (
+      <div>
+        {arxivResult.length > 0 ? (
+          <div className="heading-sites">Results from Arxiv</div>
+        ) : (
+          <></>
+        )}
+        {console.log("inside render all, ArxivResult is :")}
+        {console.log(arxivResult)}
+        {arxivResult.map((result) => {
+          return renderArxivCard(result);
         })}
       </div>
     );
@@ -345,10 +405,19 @@ const Home = () => {
 
   const handleSearch = async () => {
     if (search === "") return;
-    // googleSearch();
-    // ieeeSearch();
-    springerSearch();
-    // arxivSearch();
+    setIsLoading(true);
+    fetch("https://reqres.in/api/users?page=0")
+      .then((respose) => respose.json())
+      .then(async (respose) => {
+        await googleSearch();
+        // ieeeSearch();
+        await springerSearch();
+        await arxivSearch();
+        setIsLoading(false);
+      }).catch(() => {
+        setErrorMessage("Unable to fetch user list");
+        setIsLoading(false);
+     });
 
     // const resElsiever=await APIInstance.post("/elsiever", {search,
     //     page_no:pageNo});
@@ -400,24 +469,13 @@ const Home = () => {
           <SearchIcon />
         </button>
       </div>
-      {/* {renderAllGoogleResults()}
-      {googleError && <div>{googleError}</div>} */}
-      {/* {renderAllIEEEResults()}
-      {ieeeError && <div>{ieeeError}</div>} */}
-      {/* {renderAllSpringerResults()} */}
       <div>
-        Hello all
-        {springerResult.length > 0 ? (
-          <div className="heading-sites">Results from Springer</div>
-        ) : (
-          <div>Empty</div>
-        )}
-        {springerResult.map((result) => {
-          return <div>{renderSpringerCard(result)}</div>;
-        })}
+        {isLoading?<LoadingSpinner/>:renderAllGoogleResults()}
+        {isLoading?<LoadingSpinner/>:renderAllSpringerResults()}
+        {isLoading?<LoadingSpinner/>:renderAllArxivResults()}
       </div>
-      Hello Springer
       {springerError && <div>{springerError}</div>}
+
       <div className="navigation">
         {pageNo > 1 ? (
           <FcPrevious
@@ -426,6 +484,8 @@ const Home = () => {
               setPageNo((prev) => {
                 return --prev;
               });
+
+              window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
             }}
           />
         ) : (
@@ -438,6 +498,7 @@ const Home = () => {
             setPageNo((prev) => {
               return ++prev;
             });
+            window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
           }}
         />
       </div>

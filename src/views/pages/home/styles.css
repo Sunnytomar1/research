@@ -23,7 +23,11 @@
 }
 .card-author{
     display: flex;
-    color:grey
+    color:grey;
+    flex-wrap: wrap;
+}
+.card-author{
+    display: flex;
 }
 .my-card:hover {
     box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
@@ -49,6 +53,7 @@
         scale: 1.3;
 }
 .heading-sites{
+    margin-top: 30px;
     display: flex;
     margin-left: 8%;
     font-size: xx-large
@@ -56,11 +61,14 @@
   .previous-button{
     margin: 10px;
   }
-  @media screen and (max-device-width: 750px) {
+  @media screen and (max-device-width: 1000px) {
     .my-card-header{
         flex-direction: column;
     }
     .card-author{
+        flex-direction: column;
+    }
+    .card-authors{
         flex-direction: column;
     }
   }
