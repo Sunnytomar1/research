@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const APIInstance = axios.create({
-    baseURL: "http://192.168.227.209:8000",
+    baseURL: "https://research-server-jll8.onrender.com",
+    // baseURL: "http://localhost:8000",
 });
 
 

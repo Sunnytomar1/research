@@ -1,0 +1,66 @@
+.my-card{
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    border-radius: 5px;
+    margin-top: 15px;
+    margin-left: 10%;
+    margin-right: 10%;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding:1.5%;
+}
+.card-title{
+    font-size: 2rem;
+}
+.my-card-header{
+    display: flex;
+    justify-content: space-between;
+}
+.my-card-subheading{
+    display: flex;
+    justify-content: space-between;
+}
+.card-author{
+    display: flex;
+    color:grey
+}
+.my-card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  }
+  .navigation{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .next-button{
+    margin: 10px;
+  }
+  .pdf-icon:hover{
+    cursor: pointer;
+    scale: 1.3;
+  }
+  .next-button:hover{
+      cursor: pointer;
+      scale: 1.3;
+    }
+    .previous-button:hover{
+        cursor: pointer;
+        scale: 1.3;
+}
+.heading-sites{
+    display: flex;
+    margin-left: 8%;
+    font-size: xx-large
+}
+  .previous-button{
+    margin: 10px;
+  }
+  @media screen and (max-device-width: 750px) {
+    .my-card-header{
+        flex-direction: column;
+    }
+    .card-author{
+        flex-direction: column;
+    }
+  }
