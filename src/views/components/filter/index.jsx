@@ -1,7 +1,5 @@
 const Filter = ({
-    isGoogle,
-    isArxiv,
-    isSpringer,
+    result,
     setResult,
     yearFrom,
     yearTo,
@@ -12,58 +10,80 @@ const Filter = ({
         <div className="flex flex-col gap-4 pt-4">
             <div>
                 <div>Show results from</div>
-                <div className="flex gap-4">
-                    <div>Google Scholar</div>
-                    <input
-                        type="checkbox"
-                        checked={isGoogle}
-                        onChange={(e) => {
-                            setResult((prev) => {
-                                return {
-                                    ...prev,
-                                    isGoogle: e.target.checked,
-                                };
-                            });
-                        }}
-                    />
-                    <div>Arxiv</div>
-                    <input
-                        type="checkbox"
-                        checked={isArxiv}
-                        onChange={(e) => {
-                            setResult((prev) => {
-                                return {
-                                    ...prev,
-                                    isArxiv: e.target.checked,
-                                };
-                            });
-                        }}
-                    />
-                    <div>Springer</div>
-                    <input
-                        type="checkbox"
-                        checked={isSpringer}
-                        onChange={(e) => {
-                            setResult((prev) => {
-                                return {
-                                    ...prev,
-                                    isSpringer: e.target.checked,
-                                };
-                            });
-                        }}
-                    />
+                <div className="flex gap-4 justify-center">
+                    <div>
+                        <div>Google Scholar</div>
+                        <input
+                            className="h-4 w-4"
+                            type="checkbox"
+                            checked={result.isGoogle}
+                            onChange={(e) => {
+                                setResult((prev) => {
+                                    return {
+                                        ...prev,
+                                        isGoogle: e.target.checked,
+                                    };
+                                });
+                            }}
+                        />
+                        <div>Arxiv</div>
+                        <input
+                            className="h-4 w-4"
+                            type="checkbox"
+                            checked={result.isArxiv}
+                            onChange={(e) => {
+                                setResult((prev) => {
+                                    return {
+                                        ...prev,
+                                        isArxiv: e.target.checked,
+                                    };
+                                });
+                            }}
+                        />
+                    </div>
+                    <div>
+                        <div>Springer</div>
+                        <input
+                            className="h-4 w-4"
+                            type="checkbox"
+                            checked={result.isSpringer}
+                            onChange={(e) => {
+                                setResult((prev) => {
+                                    return {
+                                        ...prev,
+                                        isSpringer: e.target.checked,
+                                    };
+                                });
+                            }}
+                        />
+                        <div>IEEE</div>
+                        <input
+                            className="h-4 w-4"
+                            type="checkbox"
+                            checked={result.isIeee}
+                            onChange={(e) => {
+                                setResult((prev) => {
+                                    return {
+                                        ...prev,
+                                        isIeee: e.target.checked,
+                                    };
+                                });
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
             <div className="h-[1px] w-full bg-black" />
             <div>
                 <div>Year Filter</div>
-                <div className="flex">
+                <div className="flex gap-4">
                     <div>
                         <div>From</div>
                         <input
+                            placeholder="eg. 2010"
                             value={yearFrom}
-                            className=""
-                            type="text"
+                            className="border-2 border-gray-400 rounded-md p-1"
+                            type="number"
                             onChange={(e) => {
                                 setFilter((prev) => {
                                     return {
@@ -77,9 +97,10 @@ const Filter = ({
                     <div>
                         <div>To</div>
                         <input
+                            placeholder="eg. 2021"
                             value={yearTo}
-                            className=""
-                            type="text"
+                            className="border-2 border-gray-400 rounded-md p-1"
+                            type="number"
                             onChange={(e) => {
                                 setFilter((prev) => {
                                     return {
@@ -93,15 +114,15 @@ const Filter = ({
                 </div>
             </div>
             <div className="h-[1px] w-full bg-black" />
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-8 justify-center items-center">
                 <button
-                    className="bg-gray-400 text-white px-4 py-2 rounded-md"
+                    className="bg-gray-400 text-white px-4 py-2 rounded-md w-min"
                     onClick={handleSearch}
                 >
                     Apply
                 </button>
                 <button
-                    className="bg-gray-400 text-white px-4 py-2 rounded-md"
+                    className="bg-gray-400 text-white px-4 py-2 rounded-md w-min"
                     onClick={() => {
                         setResult((prev) => {
                             return {
@@ -109,6 +130,7 @@ const Filter = ({
                                 isGoogle: true,
                                 isArxiv: true,
                                 isSpringer: true,
+                                isIeee: true,
                             };
                         });
                         setFilter((prev) => {

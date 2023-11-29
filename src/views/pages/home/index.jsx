@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { FaFilePdf } from 'react-icons/fa6';
 import { FcNext, FcPrevious } from 'react-icons/fc';
 import { APIInstance } from '../../../config/APIInstance';
+import Bibtex from '../../components/bibtex';
 import Filter from '../../components/filter';
 import { LoadingSpinner } from '../../components/loader';
 import './styles.css';
@@ -45,6 +46,12 @@ const Home = () => {
         yearTo: '',
     });
 
+    const [bibtexData, setBibtexData] = useState({
+        isLoading: false,
+        output: '',
+        isOpen: false,
+    });
+
     const handleChange = (e) => {
         setSearch(e.target.value);
     };
@@ -82,6 +89,7 @@ const Home = () => {
             }
             resGoogle.data.map((result) => {
                 googleArray.push({
+                    result_id: result.result_id,
                     title: result.title,
                     authors: result.publication_info.summary.split('-')[0],
                     summary: result.snippet,
@@ -104,6 +112,22 @@ const Home = () => {
         }
     };
 
+    const google_scholar_bibtex = async (result_id) => {
+        try {
+            const resBibtex = await APIInstance.post('/google_scholar_bibtex', {
+                result_id: result_id,
+            });
+            if (resBibtex.data.error) {
+                console.log(resBibtex.data.error);
+                return;
+            }
+            window.open(resBibtex.data, '_blank');
+            console.log(resBibtex.data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     const ieeeSearch = async () => {
         setIsLoading((prev) => {
             return {
@@ -122,7 +146,9 @@ const Home = () => {
             }
             let IEEEarray = [];
             resIEEE.data.map((result) => {
+                console.log(result.doi);
                 IEEEarray.push({
+                    id: result.doi,
                     title: result.title,
                     authors: result.authors.authors,
                     summary: result.abstract,
@@ -184,7 +210,10 @@ const Home = () => {
                     editorNameArray.push(name);
                 });
                 springerArray.push({
+                    id: result.identifier,
                     title: result.publicationName,
+                    publicationType: result.publicationType,
+                    publisher: result.publisher,
                     summary: result.abstract,
                     resource: result.url.map((links) => {
                         if (links.format === 'html') {
@@ -238,6 +267,7 @@ const Home = () => {
 
             resArxiv.data.map((result) => {
                 arxivArray.push({
+                    id: result.id[0],
                     title: result.title,
                     authors: result.author,
                     summary: result.summary,
@@ -257,6 +287,31 @@ const Home = () => {
             console.log(error);
         }
     };
+
+    const arxivBibtex = async (id) => {
+        try {
+            const { data } = await APIInstance.post('/arxiv_bibtex', {
+                id,
+            });
+            setBibtexData((prev) => {
+                return {
+                    ...prev,
+                    output: data,
+                    isLoading: false,
+                };
+            });
+        } catch (err) {
+            console.log(err);
+            setBibtexData((prev) => {
+                return {
+                    ...prev,
+                    output: 'Error',
+                    isLoading: false,
+                };
+            });
+        }
+    };
+
     const renderArxivAuthors = (authors) => {
         return (
             <div className="card-author">
@@ -272,7 +327,90 @@ const Home = () => {
             </div>
         );
     };
-    const renderArxivCard = (details) => {
+
+    const renderGoogleAuthors = (authors) => {
+        return (
+            <div className="card-author">
+                {authors.split(',').map((author, index) => {
+                    return (
+                        <span key={index}>
+                            {index > 0 ? ' ,' + author : '-' + author}
+                        </span>
+                    );
+                })}
+            </div>
+        );
+    };
+
+    const renderGoogleScholarCard = (details, index) => {
+        return (
+            <div className="my-card">
+                <div className="my-card-header">
+                    <a
+                        target="_blank"
+                        rel="noreferrer"
+                        href={details.link}
+                        className="card-title"
+                    >
+                        {index}. {details.title}
+                    </a>
+                    <div style={{ color: 'grey' }}>{details.date}</div>
+                </div>
+                <div className="my-card-subheading">
+                    <div className="card-author">
+                        - {renderGoogleAuthors(details.authors)}
+                    </div>
+                    <div>
+                        {details.resource ? (
+                            details.resource.map((links) => {
+                                if (
+                                    links.file_format === 'PDF' ||
+                                    links.title === 'Full View'
+                                )
+                                    return (
+                                        <Link
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            href={links.link}
+                                        >
+                                            <FaFilePdf className="pdf-icon" />
+                                        </Link>
+                                    );
+                            })
+                        ) : (
+                            <></>
+                        )}
+                    </div>
+                </div>
+                <div>{details.summary}</div>
+                <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-max mt-4"
+                    onClick={() => {
+                        google_scholar_bibtex(details.result_id);
+                    }}
+                >
+                    Generate BibTeX
+                </button>
+            </div>
+        );
+    };
+
+    const renderAllGoogleResults = () => {
+        return (
+            <div>
+                <div className="heading-sites">
+                    Results from Google Scholar ({googleResult.length} results)
+                </div>
+                {googleResult.map((result, index) => {
+                    return (
+                        <div>{renderGoogleScholarCard(result, index + 1)}</div>
+                    );
+                })}
+            </div>
+        );
+    };
+
+    const renderArxivCard = (details, index) => {
         const pdf = details.resource.map((link) => {
             if (link.$.type === 'application/pdf') {
                 return link.$.href;
@@ -292,7 +430,7 @@ const Home = () => {
                         href={html[0]}
                         className="card-title"
                     >
-                        {details.title}
+                        {index + 1}. {details.title}
                     </a>
                     <div style={{ color: 'grey' }}>{details.date}</div>
                 </div>
@@ -304,137 +442,104 @@ const Home = () => {
                             <></>
                         )}
                     </div>
-                    <Link target="_blank" rel="noreferrer" href={pdf[1]}>
-                        <FaFilePdf className="pdf-icon" />
-                    </Link>
-                </div>
-                <div>{details.summary}</div>
-            </div>
-        );
-    };
-
-    const renderGoogleAuthors = (authors) => {
-        return (
-            <div className="card-author">
-                {authors.split(',').map((author, index) => {
-                    return (
-                        <span key={index}>
-                            {index > 0 ? ' ,' + author : '-' + author}
-                        </span>
-                    );
-                })}
-            </div>
-        );
-    };
-
-    const renderGoogleScholarCard = (details) => {
-        return (
-            <div className="my-card">
-                <div className="my-card-header">
-                    <a
-                        target="_blank"
-                        rel="noreferrer"
-                        href={details.link}
-                        className="card-title"
-                    >
-                        {details.title}
-                    </a>
-                    <div style={{ color: 'grey' }}>{details.date}</div>
-                </div>
-                <div className="my-card-subheading">
-                    <div className="card-author">
-                        - {renderGoogleAuthors(details.authors)}
-                    </div>
-                    {details.resource ? (
-                        details.resource.map((links) => {
-                            if (
-                                links.file_format === 'PDF' ||
-                                links.title === 'Full View'
-                            )
-                                return (
-                                    <Link
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        href={links.link}
-                                    >
-                                        <FaFilePdf className="pdf-icon" />
-                                    </Link>
-                                );
-                        })
-                    ) : (
-                        <></>
-                    )}
-                </div>
-                <div>{details.summary}</div>
-            </div>
-        );
-    };
-
-    const renderAllGoogleResults = () => {
-        return (
-            <div>
-                {googleResult.length > 0 ? (
-                    <div className="heading-sites">
-                        Results from Google Scholar
-                    </div>
-                ) : (
-                    <></>
-                )}
-                {googleResult.map((result) => {
-                    return <div>{renderGoogleScholarCard(result)}</div>;
-                })}
-            </div>
-        );
-    };
-
-    const renderIEEECard = (details) => {
-        return (
-            <div className="my-card">
-                <div className="my-card-header">
-                    <a
-                        target="_blank"
-                        rel="noreferrer"
-                        href={details.link}
-                        className="card-title"
-                    >
-                        {details.html}
-                    </a>
-                    <div style={{ color: 'grey' }}>{details.date}</div>
-                </div>
-                <div className="my-card-subheading">
-                    <div className="card-author">- {details.authors}</div>
-                    {details.pdf ? (
-                        //   details.resource.map((links) => {
-                        //     if (links.file_format === "PDF" || links.title === "Full View")
-                        //       return (
-                        <Link
-                            target="_blank"
-                            rel="noreferrer"
-                            href={details.link}
-                        >
+                    <div>
+                        <Link target="_blank" rel="noreferrer" href={pdf[1]}>
                             <FaFilePdf className="pdf-icon" />
                         </Link>
-                    ) : (
-                        //       );
-                        //   })
-                        <></>
-                    )}
+                    </div>
                 </div>
                 <div>{details.summary}</div>
+                <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-max mt-4"
+                    onClick={() => {
+                        setBibtexData((prev) => {
+                            return {
+                                ...prev,
+                                isOpen: true,
+                                isLoading: true,
+                            };
+                        });
+                        arxivBibtex(details.id);
+                    }}
+                >
+                    Generate BibTeX
+                </button>
             </div>
+        );
+    };
+
+    const renderIEEECard = (details, index) => {
+        return (
+            <>
+                <div className="my-card">
+                    <div className="my-card-header">
+                        <a
+                            target="_blank"
+                            rel="noreferrer"
+                            href={details.html}
+                            className="card-title"
+                        >
+                            {index + 1}. {details.title}
+                        </a>
+                        <div style={{ color: 'grey' }}>{details.date}</div>
+                    </div>
+                    <div className="my-card-subheading">
+                        <div className="card-author">
+                            {details.authors.length > 0 ? (
+                                <div className="card-author">
+                                    {details.authors.map((author, index) => {
+                                        return (
+                                            <span>
+                                                {index > 0
+                                                    ? ', ' + author.full_name
+                                                    : '- ' + author.full_name}
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <></>
+                            )}
+                        </div>
+                        <div>
+                            <Link
+                                target="_blank"
+                                rel="noreferrer"
+                                href={details.pdf}
+                            >
+                                <FaFilePdf className="pdf-icon" />
+                            </Link>
+                        </div>
+                    </div>
+                    <div>{details.summary}</div>
+                    <button
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-max mt-4"
+                        onClick={() => {
+                            setBibtexData((prev) => {
+                                return {
+                                    ...prev,
+                                    isOpen: true,
+                                    isLoading: true,
+                                };
+                            });
+                            arxivBibtex(details.id);
+                        }}
+                    >
+                        Generate BibTeX
+                    </button>
+                </div>
+            </>
         );
     };
 
     const renderAllIEEEResults = () => {
         return (
             <div>
-                {ieeeResult.length > 0 ? (
-                    <div className="heading-sites">Results from IEEE</div>
-                ) : (
-                    <></>
-                )}
-                {ieeeResult.map((result) => {
-                    renderIEEECard(result);
+                <div className="heading-sites">
+                    Results from IEEE ({ieeeResult.length} results)
+                </div>
+                {ieeeResult.map((result, index) => {
+                    return renderIEEECard(result, index);
                 })}
             </div>
         );
@@ -451,7 +556,7 @@ const Home = () => {
             </div>
         );
     };
-    const renderSpringerCard = (details) => {
+    const renderSpringerCard = (details, index) => {
         return (
             <div className="my-card">
                 <div className="my-card-header">
@@ -461,7 +566,7 @@ const Home = () => {
                         href={details.resource[0]}
                         className="card-title"
                     >
-                        {details.title}
+                        {index + 1}. {details.title}
                     </a>
                     <div style={{ color: 'grey' }}>
                         {details.date.split('-')[0]}
@@ -475,15 +580,32 @@ const Home = () => {
                             <></>
                         )}
                     </div>
-                    <Link
-                        target="_blank"
-                        rel="noreferrer"
-                        href={details.pdf[1]}
-                    >
-                        <FaFilePdf className="pdf-icon" />
-                    </Link>
+                    <div>
+                        <Link
+                            target="_blank"
+                            rel="noreferrer"
+                            href={details.pdf[1]}
+                        >
+                            <FaFilePdf className="pdf-icon" />
+                        </Link>
+                    </div>
                 </div>
                 <div>{details.summary}</div>
+                <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-max mt-4"
+                    onClick={() => {
+                        setBibtexData((prev) => {
+                            return {
+                                ...prev,
+                                isOpen: true,
+                                isLoading: true,
+                            };
+                        });
+                        arxivBibtex(details.id.substring(4));
+                    }}
+                >
+                    Generate BibTeX
+                </button>
             </div>
         );
     };
@@ -491,13 +613,11 @@ const Home = () => {
     const renderAllSpringerResults = () => {
         return (
             <div>
-                {springerResult.length > 0 ? (
-                    <div className="heading-sites">Results from Springer</div>
-                ) : (
-                    <></>
-                )}
-                {springerResult.map((result) => {
-                    return renderSpringerCard(result);
+                <div className="heading-sites">
+                    Results from Springer ({springerResult.length} results)
+                </div>
+                {springerResult.map((result, index) => {
+                    return renderSpringerCard(result, index);
                 })}
             </div>
         );
@@ -505,13 +625,11 @@ const Home = () => {
     const renderAllArxivResults = () => {
         return (
             <div>
-                {arxivResult.length > 0 ? (
-                    <div className="heading-sites">Results from Arxiv</div>
-                ) : (
-                    <></>
-                )}
-                {arxivResult.map((result) => {
-                    return renderArxivCard(result);
+                <div className="heading-sites">
+                    Results from Arxiv ({arxivResult.length} results)
+                </div>
+                {arxivResult.map((result, index) => {
+                    return renderArxivCard(result, index);
                 })}
             </div>
         );
@@ -520,7 +638,15 @@ const Home = () => {
     const handleSearch = async () => {
         if (search === '') return;
         setIsSearched(true);
-        setIsLoading(true);
+        setIsLoading((prev) => {
+            return {
+                ...prev,
+                googleScholar: true,
+                arxiv: true,
+                ieee: true,
+                springer: true,
+            };
+        });
         if (filter.yearFrom !== '' && filter.yearTo !== '') {
             if (filter.yearFrom > filter.yearTo) {
                 setErrorMessage('Invalid year range');
@@ -532,36 +658,17 @@ const Home = () => {
         fetch('https://reqres.in/api/users?page=0')
             .then((respose) => respose.json())
             .then(async (respose) => {
+                await ieeeSearch();
                 await googleSearch();
-                // ieeeSearch();
                 await springerSearch();
                 await arxivSearch();
                 setIsLoading(false);
+                setSearch('');
             })
             .catch(() => {
                 setErrorMessage('Unable to fetch user list');
                 setIsLoading(false);
             });
-
-        // const resElsiever=await APIInstance.post("/elsiever", {search,
-        //     page_no:pageNo});
-        //     console.log("Elsiever result: ");
-        //     console.log(resElsiever.data);
-        //     let elsieverArray=[];
-        //     resElsiever.data.map((result)=>{
-        //         elsieverArray.push({
-        //             title:result.title,
-        //             authors: result.author,
-        //             summary:result.summary,
-        //             resource:result.link,
-        //             date:result.updated
-
-        //         })});
-        //         console.log("Elsiever Array:");
-        //         console.log(elsieverArray);
-        // const resElsiever=await APIInstance.post("/elsiever", {search,
-        //     page_no:pageNo});
-        // console.log(resElsiever);
     };
 
     useEffect(() => {
@@ -595,9 +702,7 @@ const Home = () => {
             </div>
             <div className="w-screen flex justify-center">
                 <Filter
-                    isGoogle={isGoogle}
-                    isArxiv={isArxiv}
-                    isSpringer={isSpringer}
+                    result={result}
                     setResult={setResult}
                     yearFrom={filter.yearFrom}
                     yearTo={filter.yearTo}
@@ -621,10 +726,12 @@ const Home = () => {
                 ) : (
                     isArxiv && renderAllArxivResults()
                 )}
+                {ieee ? <LoadingSpinner /> : isIeee && renderAllIEEEResults()}
             </div>
             {springerError && <div>{springerError}</div>}
             {googleError && <div>{googleError}</div>}
             {arxivError && <div>{arxivError}</div>}
+            {ieeeError && <div>{ieeeError}</div>}
             {isSearched && (
                 <div className="navigation">
                     {pageNo > 1 ? (
@@ -661,6 +768,13 @@ const Home = () => {
                     />
                 </div>
             )}
+            {bibtexData.isOpen ? (
+                <Bibtex
+                    setBibtexData={setBibtexData}
+                    output={bibtexData.output}
+                    isLoading={bibtexData.isLoading}
+                />
+            ) : null}
         </>
     );
 };
