@@ -18,7 +18,7 @@ const Home = () => {
         springer: false,
     });
     const { arxiv, googleScholar, ieee, springer } = isLoading;
-    console.log(isLoading)
+    console.log(isLoading);
     const [search, setSearch] = useState('');
     const [pageNo, setPageNo] = useState(1);
     const [googleResult, setGoogleResult] = useState([]);
@@ -51,6 +51,21 @@ const Home = () => {
         isLoading: false,
         output: '',
         isOpen: false,
+    });
+
+    const [bibtexResult, setBibtexResult] = useState({
+        springer: {
+            isSelected: false,
+            data: [],
+        },
+        arxiv: {
+            isSelected: false,
+            data: [],
+        },
+        ieee: {
+            isSelected: false,
+            data: [],
+        },
     });
 
     const handleChange = (e) => {
@@ -289,30 +304,6 @@ const Home = () => {
         }
     };
 
-    const arxivBibtex = async (id) => {
-        try {
-            const { data } = await APIInstance.post('/arxiv_bibtex', {
-                id,
-            });
-            setBibtexData((prev) => {
-                return {
-                    ...prev,
-                    output: data,
-                    isLoading: false,
-                };
-            });
-        } catch (err) {
-            console.log(err);
-            setBibtexData((prev) => {
-                return {
-                    ...prev,
-                    output: 'Error',
-                    isLoading: false,
-                };
-            });
-        }
-    };
-
     const renderArxivAuthors = (authors) => {
         return (
             <div className="card-author">
@@ -450,21 +441,6 @@ const Home = () => {
                     </div>
                 </div>
                 <div>{details.summary}</div>
-                <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-max mt-4"
-                    onClick={() => {
-                        setBibtexData((prev) => {
-                            return {
-                                ...prev,
-                                isOpen: true,
-                                isLoading: true,
-                            };
-                        });
-                        arxivBibtex(details.id);
-                    }}
-                >
-                    Generate BibTeX
-                </button>
             </div>
         );
     };
@@ -513,21 +489,6 @@ const Home = () => {
                         </div>
                     </div>
                     <div>{details.summary}</div>
-                    <button
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-max mt-4"
-                        onClick={() => {
-                            setBibtexData((prev) => {
-                                return {
-                                    ...prev,
-                                    isOpen: true,
-                                    isLoading: true,
-                                };
-                            });
-                            arxivBibtex(details.id);
-                        }}
-                    >
-                        Generate BibTeX
-                    </button>
                 </div>
             </>
         );
@@ -592,21 +553,6 @@ const Home = () => {
                     </div>
                 </div>
                 <div>{details.summary}</div>
-                <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-max mt-4"
-                    onClick={() => {
-                        setBibtexData((prev) => {
-                            return {
-                                ...prev,
-                                isOpen: true,
-                                isLoading: true,
-                            };
-                        });
-                        arxivBibtex(details.id.substring(4));
-                    }}
-                >
-                    Generate BibTeX
-                </button>
             </div>
         );
     };
@@ -711,6 +657,85 @@ const Home = () => {
                     handleSearch={handleSearch}
                 />
             </div>
+            <div className="flex flex-col justify-center items-center mt-4">
+                <div>Generate BibTex From:</div>
+                <div className="flex flex-row gap-4">
+                    <div className="flex flex-row gap-2">
+                        <div>Springer</div>
+                        <input
+                            checked={bibtexResult.springer.isSelected}
+                            type="checkbox"
+                            onChange={(e) => {
+                                setBibtexResult((prev) => {
+                                    return {
+                                        ...prev,
+                                        springer: {
+                                            ...prev.springer,
+                                            isSelected: e.target.checked,
+                                        },
+                                    };
+                                });
+                            }}
+                        />
+                    </div>
+                    <div className="flex flex-row gap-2">
+                        <div>Arxiv</div>
+                        <input
+                            checked={bibtexResult.arxiv.isSelected}
+                            type="checkbox"
+                            onChange={(e) => {
+                                setBibtexResult((prev) => {
+                                    return {
+                                        ...prev,
+                                        arxiv: {
+                                            ...prev.arxiv,
+                                            isSelected: e.target.checked,
+                                        },
+                                    };
+                                });
+                            }}
+                        />
+                    </div>
+                    <div className="flex flex-row gap-2">
+                        <div>IEEE</div>
+                        <input
+                            checked={bibtexResult.ieee.isSelected}
+                            type="checkbox"
+                            onChange={(e) => {
+                                setBibtexResult((prev) => {
+                                    return {
+                                        ...prev,
+                                        ieee: {
+                                            ...prev.ieee,
+                                            isSelected: e.target.checked,
+                                        },
+                                    };
+                                });
+                            }}
+                        />
+                    </div>
+                </div>
+                <button
+                    onClick={() => {
+                        if (
+                            !bibtexResult.springer.isSelected &&
+                            !bibtexResult.arxiv.isSelected &&
+                            !bibtexResult.ieee.isSelected
+                        )
+                            return;
+                        setBibtexData((prev) => {
+                            return {
+                                ...prev,
+                                isOpen: true,
+                                isLoading: false,
+                            };
+                        });
+                    }}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-max mt-4"
+                >
+                    Generate BibTex
+                </button>
+            </div>
             <div>
                 {googleScholar ? (
                     <LoadingSpinner />
@@ -727,7 +752,11 @@ const Home = () => {
                 ) : (
                     isArxiv && isSearched && renderAllArxivResults()
                 )}
-                {ieee ? <LoadingSpinner /> : isIeee && isSearched && renderAllIEEEResults()}
+                {ieee ? (
+                    <LoadingSpinner />
+                ) : (
+                    isIeee && isSearched && renderAllIEEEResults()
+                )}
             </div>
             {springerError && <div>{springerError}</div>}
             {googleError && <div>{googleError}</div>}
@@ -772,8 +801,11 @@ const Home = () => {
             {bibtexData.isOpen ? (
                 <Bibtex
                     setBibtexData={setBibtexData}
-                    output={bibtexData.output}
                     isLoading={bibtexData.isLoading}
+                    bibtexResult={bibtexResult}
+                    arxivResult={arxivResult}
+                    ieeeResult={ieeeResult}
+                    springerResult={springerResult}
                 />
             ) : null}
         </>
