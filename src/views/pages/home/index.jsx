@@ -18,6 +18,7 @@ const Home = () => {
         springer: false,
     });
     const { arxiv, googleScholar, ieee, springer } = isLoading;
+    console.log(isLoading)
     const [search, setSearch] = useState('');
     const [pageNo, setPageNo] = useState(1);
     const [googleResult, setGoogleResult] = useState([]);
@@ -663,7 +664,7 @@ const Home = () => {
                 await springerSearch();
                 await arxivSearch();
                 setIsLoading(false);
-                setSearch('');
+                // setSearch('');
             })
             .catch(() => {
                 setErrorMessage('Unable to fetch user list');
@@ -714,19 +715,19 @@ const Home = () => {
                 {googleScholar ? (
                     <LoadingSpinner />
                 ) : (
-                    isGoogle && renderAllGoogleResults()
+                    isGoogle && isSearched && renderAllGoogleResults()
                 )}
                 {springer ? (
                     <LoadingSpinner />
                 ) : (
-                    isSpringer && renderAllSpringerResults()
+                    isSpringer && isSearched && renderAllSpringerResults()
                 )}
                 {arxiv ? (
                     <LoadingSpinner />
                 ) : (
-                    isArxiv && renderAllArxivResults()
+                    isArxiv && isSearched && renderAllArxivResults()
                 )}
-                {ieee ? <LoadingSpinner /> : isIeee && renderAllIEEEResults()}
+                {ieee ? <LoadingSpinner /> : isIeee && isSearched && renderAllIEEEResults()}
             </div>
             {springerError && <div>{springerError}</div>}
             {googleError && <div>{googleError}</div>}

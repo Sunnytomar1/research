@@ -11,13 +11,13 @@ const Bibtex = ({ setBibtexData, output, isLoading }) => {
     };
     useEffect(() => {
         document.body.style.overflow = 'hidden';
-        window.scrollTo(0, 0);
+        // window.scrollTo(0, 0);
         return () => {
             document.body.style.overflow = 'unset';
         };
     }, []);
     return (
-        <div className="absolute top-0 w-screen h-screen text-left bg-black bg-opacity-50 z-50 flex justify-center items-center overflow-x-hidden overflow-y-hidden">
+        <div className="fixed top-0 w-screen h-screen text-left bg-black bg-opacity-50 z-50 flex justify-center items-center overflow-x-hidden overflow-y-hidden">
             <div
                 className="absolute top-10 right-10 text-white text-2xl cursor-pointer"
                 onClick={close}

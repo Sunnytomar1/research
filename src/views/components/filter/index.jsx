@@ -8,11 +8,11 @@ const Filter = ({
 }) => {
     return (
         <div className="flex flex-col gap-4 pt-4">
-            <div>
+            <div className="flex flex-col justify-center items-center text-center">
                 <div>Show results from</div>
                 <div className="flex gap-4 justify-center">
-                    <div>
-                        <div>Google Scholar</div>
+                    <div >
+                        <div >Google Scholar</div>
                         <input
                             className="h-4 w-4"
                             type="checkbox"
@@ -74,15 +74,16 @@ const Filter = ({
                 </div>
             </div>
             <div className="h-[1px] w-full bg-black" />
-            <div>
+            <div className="w-[90vw] max-w-[350px]">
                 <div>Year Filter</div>
                 <div className="flex gap-4">
                     <div>
                         <div>From</div>
                         <input
+                        
                             placeholder="eg. 2010"
                             value={yearFrom}
-                            className="border-2 border-gray-400 rounded-md p-1"
+                            className="border-2 border-gray-400 rounded-md p-1 w-full"
                             type="number"
                             onChange={(e) => {
                                 setFilter((prev) => {
@@ -97,9 +98,10 @@ const Filter = ({
                     <div>
                         <div>To</div>
                         <input
+                        
                             placeholder="eg. 2021"
                             value={yearTo}
-                            className="border-2 border-gray-400 rounded-md p-1"
+                            className="border-2 border-gray-400 rounded-md p-1 w-full"
                             type="number"
                             onChange={(e) => {
                                 setFilter((prev) => {
@@ -114,7 +116,7 @@ const Filter = ({
                 </div>
             </div>
             <div className="h-[1px] w-full bg-black" />
-            <div className="flex flex-col gap-8 justify-center items-center">
+            <div className="flex flex-row gap-8 justify-center items-center">
                 <button
                     className="bg-gray-400 text-white px-4 py-2 rounded-md w-min"
                     onClick={handleSearch}
